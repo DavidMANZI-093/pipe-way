@@ -1,0 +1,4 @@
+openvpn-data/
+*.ovpn
+*.log
+.DS_Store
