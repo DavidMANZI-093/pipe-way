@@ -1,0 +1,42 @@
+services:
+  # LOCATION A: The Trusted Exit
+  gateway-proxy:
+    image: kylemanna/openvpn
+    container_name: gateway_proxy
+    privileged: true
+    volumes:
+      - ./openvpn-data:/etc/openvpn
+      - /lib/modules:/lib/modules:ro
+    networks:
+      external_net:
+      internal_tunnel:
+    cap_add:
+      - NET_ADMIN
+
+  # LOCATION B: The Client Router
+  virtual-router:
+    image: alpine
+    container_name: virtual_router
+    privileged: true
+    tty: true
+    networks:
+      internal_tunnel:
+      client_lan:
+    command: /bin/sh -c "apk add --no-cache openvpn iptables iproute2 && tail -f /dev/null"
+
+  # THE END USER: No configuration needed
+  client-pc:
+    image: alpine
+    container_name: client_pc
+    privileged: true
+    networks:
+      client_lan:
+    command: /bin/sh -c "tail -f /dev/null"
+
+networks:
+  external_net:
+    driver: bridge
+  internal_tunnel:
+    driver: bridge
+  client_lan:
+    driver: bridge
